@@ -1,2 +1,6 @@
-# sleep-sound-app-legal-docs
-Repository for the legal documentation of the Sleep Sound App, including the Privacy Policy and Terms of Service.  This repo is public for hosting via GitHub Pages; it contains no source code or confidential app data. 
+# Sleep Sound App - Legal Documentation
+
+Welcome! Here you can find the legal documents for the Sleep Sound App:
+
+- [Privacy Policy](privacy.md)  
+- [Terms & Conditions](terms.md)
