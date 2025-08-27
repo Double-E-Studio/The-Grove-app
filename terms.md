@@ -25,6 +25,9 @@ The Service Provider may discontinue the Application at any time without notice.
 ## Limitation of Liability
 While the Service Provider aims to provide accurate and updated information, they rely on third-party sources and accept **no liability** for direct or indirect losses resulting from the use of the Application.
 
+## Third-Party Platforms
+The Application is provided through third-party distribution platforms such as the Google Play Store and Apple App Store (collectively, "Stores"). Your use of the Application is also governed by the terms, conditions, and policies of the Store from which you downloaded it. You are responsible for complying with any applicable Store rules. The Service Provider is not liable for any actions or obligations of the Stores that may affect your use of the Application.
+
 ## Changes to Terms
 These Terms & Conditions may be updated periodically. You are encouraged to review this page regularly. Continued use of the Application constitutes acceptance of any changes.
 
