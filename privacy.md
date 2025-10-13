@@ -12,7 +12,7 @@ The only information stored is **user preferences and settings** (e.g., theme, s
 The Application does **not collect precise real-time location information** from your device.
 
 ## Third-Party Access
-Since the Application does not collect personal information, **no data is shared with third parties**. The sounds provided in the app are released under **CC0 (public domain)** and can be freely used.
+Since the Application does not collect personal information, **no data is shared with third parties**. The sounds and videos provided in the Application are released under CC0 (public domain) or equivalent free-to-use licenses.
 
 ## Children
 The Application is **not directed to children under 13**.  
