@@ -2,7 +2,7 @@
 
 **Last updated: 27 August 2025**
 
-These Terms & Conditions apply to the **SleepSoundApp** app (hereafter referred to as "Application") for mobile devices, created by Michele Cipriani and Edoardo Bazzotti (hereafter referred to as "Service Provider"). The service is currently **Free**, with the possibility of introducing optional premium features in the future.
+These Terms & Conditions apply to the **The Grove - Sleep Sound** app (hereafter referred to as "Application") for mobile devices, created by Michele Cipriani and Edoardo Bazzotti (hereafter referred to as "Service Provider"). The service is currently **Free**, with the possibility of introducing optional premium features in the future.
 
 ## Acceptance of Terms
 By downloading or using the Application, you agree to these Terms & Conditions. Please read them carefully. Unauthorized copying, modification, or extraction of the source code, trademarks, or any part of the Application is prohibited. All intellectual property rights remain with the Service Provider.
