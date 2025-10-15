@@ -1,4 +1,4 @@
-# Sleep Sound App - Legal Documentation
+# The Grove - Sleep Sound - Legal Documentation
 
 Welcome! Here you can find the legal documents for the Sleep Sound App:
 
