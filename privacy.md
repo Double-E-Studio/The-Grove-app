@@ -2,7 +2,7 @@
 
 **Last updated: 27 August 2025**
 
-This Privacy Policy applies to the **SleepSoundApp** app (hereafter referred to as "Application") for mobile devices, created by Michele Cipriani and Edoardo Bazzotti (hereafter referred to as "Service Provider"). The service is currently **Free**, with the possibility of introducing optional premium features in the future. The Application is provided "AS IS".
+This Privacy Policy applies to the **The Grove - Sleep Sound** app (hereafter referred to as "Application") for mobile devices, created by Michele Cipriani and Edoardo Bazzotti (hereafter referred to as "Service Provider"). The service is currently **Free**, with the possibility of introducing optional premium features in the future. The Application is provided "AS IS".
 
 ## Information Collection
 The Application does **not collect any personal information**. Registration or login is not required to use the Application.  
