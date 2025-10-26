@@ -77,22 +77,72 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-        // Enable touch 'hover' behavior for touch devices (mobile Safari / iOS)
-        function enableTouchHover(selector) {
-            if (!('ontouchstart' in window) && !(navigator.maxTouchPoints > 0)) return;
-            document.querySelectorAll(selector).forEach(el => {
-                el.addEventListener('touchstart', function() {
-                    // add a temporary class to simulate :hover styles on touch
-                    el.classList.add('touch');
-                    clearTimeout(el._touchTimeout);
-                    el._touchTimeout = setTimeout(() => el.classList.remove('touch'), 1200);
-                }, { passive: true });
+    // Migliore gestione touch per mobile - FIX per Safari iOS
+    function enableTouchHover(selector) {
+        // Verifica se è un dispositivo touch
+        if (!('ontouchstart' in window) && !(navigator.maxTouchPoints > 0)) return;
+
+        const els = document.querySelectorAll(selector);
+        
+        els.forEach(el => {
+            let touchMoved = false;
+            
+            // Rileva se l'utente sta scrollando o toccando
+            el.addEventListener('touchstart', function(e) {
+                touchMoved = false;
+            }, { passive: true });
+
+            el.addEventListener('touchmove', function() {
+                touchMoved = true;
+            }, { passive: true });
+
+            // Applica l'effetto hover solo se NON ha scrollato
+            el.addEventListener('touchend', function(e) {
+                if (!touchMoved) {
+                    // Rimuovi touch da tutti gli altri elementi
+                    document.querySelectorAll(selector).forEach(other => {
+                        if (other !== el) {
+                            other.classList.remove('touch');
+                        }
+                    });
+                    
+                    // Toggle sulla classe touch per questo elemento
+                    el.classList.toggle('touch');
+                    
+                    // Rimuovi automaticamente dopo 1.5 secondi
+                    if (el.classList.contains('touch')) {
+                        if (el._touchTimeout) clearTimeout(el._touchTimeout);
+                        el._touchTimeout = setTimeout(() => {
+                            el.classList.remove('touch');
+                        }, 1500);
+                    } else {
+                        if (el._touchTimeout) {
+                            clearTimeout(el._touchTimeout);
+                            el._touchTimeout = null;
+                        }
+                    }
+                }
+            }, { passive: true });
+        });
+        // Nota: il listener global touchend è stato rimosso da qui per evitare duplicati
+    }
+
+    // Attiva touch hover su phone mockup e feature cards
+    enableTouchHover('.phone-mockup');
+    enableTouchHover('.feature-content');
+    
+    // Aggiungo UNA sola volta il listener globale per rimuovere lo stato quando si tocca fuori
+    document.addEventListener('touchend', function(e) {
+        if (!e.target.closest('.phone-mockup') && !e.target.closest('.feature-content')) {
+            document.querySelectorAll('.phone-mockup.touch, .feature-content.touch').forEach(active => {
+                active.classList.remove('touch');
+                if (active._touchTimeout) {
+                    clearTimeout(active._touchTimeout);
+                    active._touchTimeout = null;
+                }
             });
         }
-
-        // Activate touch hover on phone mockup and feature cards
-        enableTouchHover('.phone-mockup');
-        enableTouchHover('.feature-content');
+    }, { passive: true });
 });
 
 function showFormMessage(message, type) {
