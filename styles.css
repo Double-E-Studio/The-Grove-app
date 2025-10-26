@@ -180,18 +180,39 @@ body {
 .phone-mockup::before {
     content: '';
     position: absolute;
-    top: -20px;
-    left: -20px;
-    right: -20px;
-    bottom: -20px;
-    background: radial-gradient(circle at center, 
+    /* center a large circular glow behind the phone to avoid rectangular rasterization on mobile browsers */
+    top: 50%;
+    left: 50%;
+    width: 220%;
+    height: 220%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    background: radial-gradient(circle at center,
         rgba(107, 196, 122, 0.15),
         transparent 70%
     );
-    border-radius: 50px;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    /* keep blur but add a box-shadow fallback which often renders better on mobile compositors */
     filter: blur(40px);
+    -webkit-filter: blur(40px);
+    box-shadow: 0 30px 80px rgba(107, 196, 122, 0.08);
     z-index: -1;
     opacity: 0.8;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+/* Reduce intensity on small screens to avoid aggressive rasterization artifacts on older iOS */
+@media (max-width: 520px) {
+    .phone-mockup::before {
+        width: 180%;
+        height: 180%;
+        filter: blur(28px);
+        -webkit-filter: blur(28px);
+        opacity: 0.7;
+        box-shadow: 0 20px 50px rgba(107, 196, 122, 0.07);
+    }
 }
 
 .phone-mockup img {
