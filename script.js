@@ -76,6 +76,23 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.textContent = 'Sending...';
         });
     }
+
+        // Enable touch 'hover' behavior for touch devices (mobile Safari / iOS)
+        function enableTouchHover(selector) {
+            if (!('ontouchstart' in window) && !(navigator.maxTouchPoints > 0)) return;
+            document.querySelectorAll(selector).forEach(el => {
+                el.addEventListener('touchstart', function() {
+                    // add a temporary class to simulate :hover styles on touch
+                    el.classList.add('touch');
+                    clearTimeout(el._touchTimeout);
+                    el._touchTimeout = setTimeout(() => el.classList.remove('touch'), 1200);
+                }, { passive: true });
+            });
+        }
+
+        // Activate touch hover on phone mockup and feature cards
+        enableTouchHover('.phone-mockup');
+        enableTouchHover('.feature-content');
 });
 
 function showFormMessage(message, type) {
