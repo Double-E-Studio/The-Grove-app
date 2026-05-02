@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Grove Mix Link</title>
+  <style>
+    :root {
+      --bg: #11131a;
+      --card: #1b1f2b;
+      --text: #e7ecff;
+      --muted: #a9b3d6;
+      --accent: #6bc47a;
+      --accent-2: #4e9ef7;
+      --danger: #ff6f6f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1b2338 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .card {
+      width: min(700px, 100%);
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    p { margin: 0 0 14px; color: var(--muted); line-height: 1.5; }
+    .status {
+      margin: 14px 0 18px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .status.error { color: var(--danger); }
+    .status.success { color: var(--accent); }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 18px; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      background: var(--accent-2);
+      transition: opacity 0.2s;
+    }
+    button:hover:not(:disabled) { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary { background: #2d3858; color: #d5def8; }
+    button.success { background: var(--accent); }
+    code, textarea {
+      display: block;
+      width: 100%;
+      background: #0f1320;
+      color: #dbe4ff;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+      word-break: break-all;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .small { font-size: 0.9rem; color: var(--muted); }
+    a { color: #97bdff; }
+    .section { margin-top: 20px; display: none; }
+    .section.visible { display: block; }
+    .section-title { 
+      font-size: 0.95rem; 
+      font-weight: 600; 
+      color: var(--text); 
+      margin-bottom: 10px; 
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Open shared mix in The Grove</h1>
+    
+    <div id="status" class="status">Preparing your mix...</div>
+
+    <!-- Primary action: Open in app -->
+    <div class="actions">
+      <button id="openAppButton" type="button">Open in The Grove</button>
+    </div>
+
+    <!-- Fallback section: App not installed -->
+    <div id="appNotInstalledSection" class="section">
+      <p>The Grove app is not installed on your device. Download it to automatically import your mix:</p>
+      <div class="actions">
+        <button id="downloadAndroidButton" class="success" type="button">Download for Android</button>
+        <button id="downloadIOSButton" class="success" type="button">Download for iOS</button>
+      </div>
+    </div>
+
+    <!-- Fallback section: Manual import -->
+    <div id="manualImportSection" class="section">
+      <div class="section-title">Or manually import using the code below:</div>
+      <p class="small">Copy this code and paste it in The Grove app (Mix Center → Import Mix Code):</p>
+      <textarea id="mixCode" readonly></textarea>
+      <div class="actions" style="margin-top: 8px;">
+        <button id="copyCodeButton" class="secondary" type="button">Copy import code</button>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top: 20px; display: none;" id="advancedSection">
+      <strong>Advanced:</strong><br>
+      App link: <code id="appLink" style="margin: 8px 0; padding: 8px; font-size: 0.8rem;"></code>
+    </p>
+  </main>
+
+  <script>
+    (function () {
+      const statusEl = document.getElementById('status');
+      const appLinkEl = document.getElementById('appLink');
+      const mixCodeEl = document.getElementById('mixCode');
+      const openAppButton = document.getElementById('openAppButton');
+      const copyCodeButton = document.getElementById('copyCodeButton');
+      const downloadAndroidButton = document.getElementById('downloadAndroidButton');
+      const downloadIOSButton = document.getElementById('downloadIOSButton');
+      const appNotInstalledSection = document.getElementById('appNotInstalledSection');
+      const manualImportSection = document.getElementById('manualImportSection');
+
+      function setStatus(text, type = 'default') {
+        statusEl.textContent = text;
+        statusEl.className = 'status ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
+      }
+
+      function showAppNotInstalledFallback() {
+        setStatus('App not installed. Download it below or use the import code.', 'error');
+        openAppButton.style.display = 'none';
+        appNotInstalledSection.classList.add('visible');
+        manualImportSection.classList.add('visible');
+      }
+
+      function getEncodedPayload() {
+        const hash = (window.location.hash || '').replace(/^#/, '').trim();
+        const query = new URLSearchParams(window.location.search);
+        const queryCode = (query.get('code') || '').trim();
+        const candidate = queryCode || hash;
+
+        if (!candidate) return null;
+
+        const versioned = /^v(\d+):([0-9a-fA-F]+)$/.exec(candidate);
+        if (versioned) {
+          return { version: versioned[1], encoded: versioned[2] };
+        }
+
+        if (/^[0-9a-fA-F]+$/.test(candidate)) {
+          return { version: '1', encoded: candidate };
+        }
+
+        return null;
+      }
+
+      const payload = getEncodedPayload();
+      if (!payload) {
+        setStatus('Invalid or missing mix payload.', 'error');
+        appLinkEl.textContent = 'Unavailable';
+        mixCodeEl.value = 'Unavailable';
+        openAppButton.disabled = true;
+        copyCodeButton.disabled = true;
+        downloadAndroidButton.disabled = true;
+        downloadIOSButton.disabled = true;
+        return;
+      }
+
+      const appLink = `thegrove://mix/v${payload.version}/${payload.encoded}`;
+      const importCode = `GROVE-MIX-${payload.version}:${payload.encoded}`;
+
+      appLinkEl.textContent = appLink;
+      mixCodeEl.value = importCode;
+
+      openAppButton.addEventListener('click', function () {
+        window.location.href = appLink;
+      });
+
+      downloadAndroidButton.addEventListener('click', function () {
+        window.location.href = 'https://play.google.com/store/apps/details?id=com.thegrove.sleepsound';
+      });
+
+      downloadIOSButton.addEventListener('click', function () {
+        window.location.href = 'https://apps.apple.com/app/id6754394085';
+      });
+
+      copyCodeButton.addEventListener('click', async function () {
+        try {
+          await navigator.clipboard.writeText(importCode);
+          setStatus('Import code copied! Open The Grove and paste it in Mix Center → Import Mix Code.', 'success');
+        } catch (_) {
+          setStatus('Copy failed. Please copy the code manually.', 'error');
+        }
+      });
+
+      // Attempt to open the app
+      setStatus('Opening The Grove...', 'default');
+      const openTime = Date.now();
+      
+      // Try to open the app
+      window.location.href = appLink;
+
+      // If app didn't open within 3 seconds, show fallback
+      setTimeout(function () {
+        // Check if app is still visible (i.e., deep link failed)
+        if (document.visibilityState === 'visible' || Date.now() - openTime < 4000) {
+          showAppNotInstalledFallback();
+        }
+      }, 3000);
+
+      // Also handle the case where user comes back to the page
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+          // User came back to the page (deep link failed or app closed)
+          if (Date.now() - openTime > 1000) {
+            showAppNotInstalledFallback();
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
