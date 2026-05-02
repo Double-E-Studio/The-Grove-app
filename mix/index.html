@@ -204,27 +204,39 @@
       // Attempt to open the app
       setStatus('Opening The Grove...', 'default');
       const openTime = Date.now();
-      
+      let appWentBackground = false;
+      let fallbackShown = false;
+
+      function showFallbackOnce() {
+        if (fallbackShown) return;
+        fallbackShown = true;
+        showAppNotInstalledFallback();
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') {
+          appWentBackground = true;
+          return;
+        }
+
+        if (document.visibilityState === 'visible' && Date.now() - openTime > 1200) {
+          showFallbackOnce();
+        }
+      });
+
+      window.addEventListener('pagehide', function () {
+        appWentBackground = true;
+      });
+
       // Try to open the app
       window.location.href = appLink;
 
-      // If app didn't open within 3 seconds, show fallback
+      // If the app did not take focus/background the page, show the fallback.
       setTimeout(function () {
-        // Check if app is still visible (i.e., deep link failed)
-        if (document.visibilityState === 'visible' || Date.now() - openTime < 4000) {
-          showAppNotInstalledFallback();
+        if (!appWentBackground && document.visibilityState === 'visible') {
+          showFallbackOnce();
         }
-      }, 3000);
-
-      // Also handle the case where user comes back to the page
-      document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'visible') {
-          // User came back to the page (deep link failed or app closed)
-          if (Date.now() - openTime > 1000) {
-            showAppNotInstalledFallback();
-          }
-        }
-      });
+      }, 2200);
     })();
   </script>
 </body>
