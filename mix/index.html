@@ -12,7 +12,6 @@
       --muted: #a9b3d6;
       --accent: #6bc47a;
       --accent-2: #4e9ef7;
-      --danger: #ff6f6f;
     }
     * { box-sizing: border-box; }
     body {
@@ -33,16 +32,8 @@
       padding: 24px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
-    h1 { margin: 0 0 8px; font-size: 1.5rem; }
-    p { margin: 0 0 14px; color: var(--muted); line-height: 1.5; }
-    .status {
-      margin: 14px 0 18px;
-      font-weight: 600;
-      color: var(--accent);
-    }
-    .status.error { color: var(--danger); }
-    .status.success { color: var(--accent); }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 18px; }
+    h1 { margin: 0 0 20px; font-size: 1.5rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
     button {
       border: 0;
       border-radius: 10px;
@@ -56,131 +47,51 @@
     button:hover:not(:disabled) { opacity: 0.9; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     button.success { background: var(--accent); }
-    .small { font-size: 0.9rem; color: var(--muted); }
-    a { color: #97bdff; }
-    .section { margin-top: 20px; display: none; }
-    .section.visible { display: block; }
   </style>
 </head>
 <body>
   <main class="card">
     <h1>Open shared mix in The Grove</h1>
-
-    <div id="status" class="status">Preparing your mix...</div>
-
-    <!-- Primary action: Open in app -->
     <div class="actions">
       <button id="openAppButton" type="button">Open in The Grove</button>
-    </div>
-
-    <!-- Fallback section: App not installed -->
-    <div id="appNotInstalledSection" class="section">
-      <p>The Grove app is not installed on your device. Download it to automatically import your mix:</p>
-      <div class="actions">
-        <button id="downloadAndroidButton" class="success" type="button">Download for Android</button>
-        <button id="downloadIOSButton" class="success" type="button">Download for iOS</button>
-      </div>
+      <button id="downloadAndroidButton" class="success" type="button">Download for Android</button>
+      <button id="downloadIOSButton" class="success" type="button">Download for iOS</button>
     </div>
   </main>
 
   <script>
     (function () {
-      const statusEl = document.getElementById('status');
-      const openAppButton = document.getElementById('openAppButton');
-      const downloadAndroidButton = document.getElementById('downloadAndroidButton');
-      const downloadIOSButton = document.getElementById('downloadIOSButton');
-      const appNotInstalledSection = document.getElementById('appNotInstalledSection');
-
-      function setStatus(text, type = 'default') {
-        statusEl.textContent = text;
-        statusEl.className = 'status ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
-      }
-
-      function showAppNotInstalledFallback() {
-        setStatus('App not installed. Download it below.', 'error');
-        openAppButton.style.display = 'none';
-        appNotInstalledSection.classList.add('visible');
-      }
-
       function getEncodedPayload() {
         const hash = (window.location.hash || '').replace(/^#/, '').trim();
         const query = new URLSearchParams(window.location.search);
-        const queryCode = (query.get('code') || '').trim();
-        const candidate = queryCode || hash;
-
+        const candidate = (query.get('code') || '').trim() || hash;
         if (!candidate) return null;
-
         const versioned = /^v(\d+):([A-Za-z0-9_+/=\-]+)$/.exec(candidate);
-        if (versioned) {
-          return { version: versioned[1], encoded: versioned[2] };
-        }
-
-        if (/^[A-Za-z0-9_+/=\-]+$/.test(candidate)) {
-          return { version: '1', encoded: candidate };
-        }
-
+        if (versioned) return { version: versioned[1], encoded: versioned[2] };
+        if (/^[A-Za-z0-9_+/=\-]+$/.test(candidate)) return { version: '1', encoded: candidate };
         return null;
       }
 
       const payload = getEncodedPayload();
+      const openAppButton = document.getElementById('openAppButton');
+
       if (!payload) {
-        setStatus('Invalid or missing mix payload.', 'error');
         openAppButton.disabled = true;
-        downloadAndroidButton.disabled = true;
-        downloadIOSButton.disabled = true;
-        return;
+      } else {
+        const appLink = `thegrove://mix/v${payload.version}/${payload.encoded}`;
+        openAppButton.addEventListener('click', function () {
+          window.location.href = appLink;
+        });
+        window.location.href = appLink;
       }
 
-      const appLink = `thegrove://mix/v${payload.version}/${payload.encoded}`;
-
-      openAppButton.addEventListener('click', function () {
-        window.location.href = appLink;
-      });
-
-      downloadAndroidButton.addEventListener('click', function () {
+      document.getElementById('downloadAndroidButton').addEventListener('click', function () {
         window.location.href = 'https://play.google.com/store/apps/details?id=com.thegrove.sleepsound';
       });
 
-      downloadIOSButton.addEventListener('click', function () {
+      document.getElementById('downloadIOSButton').addEventListener('click', function () {
         window.location.href = 'https://apps.apple.com/app/id6754394085';
       });
-
-      // Attempt to open the app
-      setStatus('Opening The Grove...', 'default');
-      const openTime = Date.now();
-      let appWentBackground = false;
-      let fallbackShown = false;
-
-      function showFallbackOnce() {
-        if (fallbackShown) return;
-        fallbackShown = true;
-        showAppNotInstalledFallback();
-      }
-
-      document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'hidden') {
-          appWentBackground = true;
-          return;
-        }
-
-        if (document.visibilityState === 'visible' && Date.now() - openTime > 1200) {
-          showFallbackOnce();
-        }
-      });
-
-      window.addEventListener('pagehide', function () {
-        appWentBackground = true;
-      });
-
-      // Try to open the app
-      window.location.href = appLink;
-
-      // If the app did not take focus/background the page, show the fallback.
-      setTimeout(function () {
-        if (!appWentBackground && document.visibilityState === 'visible') {
-          showFallbackOnce();
-        }
-      }, 2200);
     })();
   </script>
 </body>
