@@ -55,37 +55,17 @@
     }
     button:hover:not(:disabled) { opacity: 0.9; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
-    button.secondary { background: #2d3858; color: #d5def8; }
     button.success { background: var(--accent); }
-    code, textarea {
-      display: block;
-      width: 100%;
-      background: #0f1320;
-      color: #dbe4ff;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 10px;
-      padding: 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.86rem;
-      word-break: break-all;
-    }
-    textarea { min-height: 90px; resize: vertical; }
     .small { font-size: 0.9rem; color: var(--muted); }
     a { color: #97bdff; }
     .section { margin-top: 20px; display: none; }
     .section.visible { display: block; }
-    .section-title { 
-      font-size: 0.95rem; 
-      font-weight: 600; 
-      color: var(--text); 
-      margin-bottom: 10px; 
-    }
   </style>
 </head>
 <body>
   <main class="card">
     <h1>Open shared mix in The Grove</h1>
-    
+
     <div id="status" class="status">Preparing your mix...</div>
 
     <!-- Primary action: Open in app -->
@@ -101,34 +81,15 @@
         <button id="downloadIOSButton" class="success" type="button">Download for iOS</button>
       </div>
     </div>
-
-    <!-- Fallback section: Manual import -->
-    <div id="manualImportSection" class="section">
-      <div class="section-title">Or manually import using the code below:</div>
-      <p class="small">Copy this code and paste it in The Grove app (Mix Center → Import Mix Code):</p>
-      <textarea id="mixCode" readonly></textarea>
-      <div class="actions" style="margin-top: 8px;">
-        <button id="copyCodeButton" class="secondary" type="button">Copy import code</button>
-      </div>
-    </div>
-
-    <p class="small" style="margin-top: 20px; display: none;" id="advancedSection">
-      <strong>Advanced:</strong><br>
-      App link: <code id="appLink" style="margin: 8px 0; padding: 8px; font-size: 0.8rem;"></code>
-    </p>
   </main>
 
   <script>
     (function () {
       const statusEl = document.getElementById('status');
-      const appLinkEl = document.getElementById('appLink');
-      const mixCodeEl = document.getElementById('mixCode');
       const openAppButton = document.getElementById('openAppButton');
-      const copyCodeButton = document.getElementById('copyCodeButton');
       const downloadAndroidButton = document.getElementById('downloadAndroidButton');
       const downloadIOSButton = document.getElementById('downloadIOSButton');
       const appNotInstalledSection = document.getElementById('appNotInstalledSection');
-      const manualImportSection = document.getElementById('manualImportSection');
 
       function setStatus(text, type = 'default') {
         statusEl.textContent = text;
@@ -136,10 +97,9 @@
       }
 
       function showAppNotInstalledFallback() {
-        setStatus('App not installed. Download it below or use the import code.', 'error');
+        setStatus('App not installed. Download it below.', 'error');
         openAppButton.style.display = 'none';
         appNotInstalledSection.classList.add('visible');
-        manualImportSection.classList.add('visible');
       }
 
       function getEncodedPayload() {
@@ -165,20 +125,13 @@
       const payload = getEncodedPayload();
       if (!payload) {
         setStatus('Invalid or missing mix payload.', 'error');
-        appLinkEl.textContent = 'Unavailable';
-        mixCodeEl.value = 'Unavailable';
         openAppButton.disabled = true;
-        copyCodeButton.disabled = true;
         downloadAndroidButton.disabled = true;
         downloadIOSButton.disabled = true;
         return;
       }
 
       const appLink = `thegrove://mix/v${payload.version}/${payload.encoded}`;
-      const importCode = `GROVE-MIX-${payload.version}:${payload.encoded}`;
-
-      appLinkEl.textContent = appLink;
-      mixCodeEl.value = importCode;
 
       openAppButton.addEventListener('click', function () {
         window.location.href = appLink;
@@ -190,15 +143,6 @@
 
       downloadIOSButton.addEventListener('click', function () {
         window.location.href = 'https://apps.apple.com/app/id6754394085';
-      });
-
-      copyCodeButton.addEventListener('click', async function () {
-        try {
-          await navigator.clipboard.writeText(importCode);
-          setStatus('Import code copied! Open The Grove and paste it in Mix Center → Import Mix Code.', 'success');
-        } catch (_) {
-          setStatus('Copy failed. Please copy the code manually.', 'error');
-        }
       });
 
       // Attempt to open the app
