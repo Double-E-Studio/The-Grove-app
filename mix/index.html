@@ -57,6 +57,9 @@
       <button id="downloadAndroidButton" class="success" type="button">Download for Android</button>
       <button id="downloadIOSButton" class="success" type="button">Download for iOS</button>
     </div>
+    <p id="downloadHint" style="display:none; margin-top:16px; color:var(--muted); font-size:0.9rem;">
+      App not found — download it with the buttons above.
+    </p>
   </main>
 
   <script>
@@ -74,22 +77,56 @@
 
       const payload = getEncodedPayload();
       const openAppButton = document.getElementById('openAppButton');
+      const downloadAndroidButton = document.getElementById('downloadAndroidButton');
+      const downloadIOSButton = document.getElementById('downloadIOSButton');
+      const hint = document.getElementById('downloadHint');
+
+      function showDownloadHint() {
+        hint.style.display = 'block';
+      }
 
       if (!payload) {
         openAppButton.disabled = true;
       } else {
         const appLink = `thegrove://mix/v${payload.version}/${payload.encoded}`;
+
         openAppButton.addEventListener('click', function () {
           window.location.href = appLink;
+
+          let appOpened = false;
+
+          function onHide() {
+            appOpened = true;
+            cleanup();
+          }
+
+          function cleanup() {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('blur', onHide);
+            clearTimeout(timer);
+          }
+
+          function onVisibilityChange() {
+            if (document.visibilityState === 'hidden') onHide();
+          }
+
+          document.addEventListener('visibilitychange', onVisibilityChange);
+          window.addEventListener('blur', onHide);
+
+          const timer = setTimeout(function () {
+            cleanup();
+            if (!appOpened) showDownloadHint();
+          }, 500);
         });
+
         window.location.href = appLink;
       }
 
-      document.getElementById('downloadAndroidButton').addEventListener('click', function () {
+      downloadAndroidButton.addEventListener('click', function () {
         window.location.href = 'https://play.google.com/store/apps/details?id=com.thegrove.sleepsound';
       });
 
-      document.getElementById('downloadIOSButton').addEventListener('click', function () {
+      downloadIOSButton.addEventListener('click', function () {
         window.location.href = 'https://apps.apple.com/app/id6754394085';
       });
     })();
