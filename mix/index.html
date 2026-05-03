@@ -150,12 +150,12 @@
 
         if (!candidate) return null;
 
-        const versioned = /^v(\d+):([0-9a-fA-F]+)$/.exec(candidate);
+        const versioned = /^v(\d+):([A-Za-z0-9_+/=\-]+)$/.exec(candidate);
         if (versioned) {
           return { version: versioned[1], encoded: versioned[2] };
         }
 
-        if (/^[0-9a-fA-F]+$/.test(candidate)) {
+        if (/^[A-Za-z0-9_+/=\-]+$/.test(candidate)) {
           return { version: '1', encoded: candidate };
         }
 
